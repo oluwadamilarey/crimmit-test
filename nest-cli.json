@@ -5,7 +5,9 @@
   "root": "apps/orders",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/orders/tsconfig.app.json"
+    "tsConfigPath": "apps/orders/tsconfig.app.json",
+    "assets": ["**/*.proto"],
+    "watchAssets": true
   },
   "projects": {
     "orders": {
@@ -14,16 +16,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/orders/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/orders/tsconfig.app.json"
-      }
-    },
-    "auth": {
-      "type": "application",
-      "root": "apps/auth",
-      "entryFile": "main",
-      "sourceRoot": "apps/auth/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/auth/tsconfig.app.json"
+        "tsConfigPath": "apps/orders/tsconfig.app.json",
+        "assets": ["**/*.proto"],
+        "watchAssets": true
       }
     },
     "common": {
@@ -32,7 +27,8 @@
       "entryFile": "index",
       "sourceRoot": "libs/common/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
+        "tsConfigPath": "libs/common/tsconfig.lib.json",
+        "watchAssets": true
       }
     },
     "products": {
@@ -41,7 +37,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/products/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/products/tsconfig.app.json"
+        "tsConfigPath": "apps/products/tsconfig.app.json",
+        "assets": ["**/*.proto"],
+        "watchAssets": true
       }
     },
     "owners": {
@@ -50,7 +48,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/owners/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/owners/tsconfig.app.json"
+        "tsConfigPath": "apps/owners/tsconfig.app.json",
+        "assets": ["**/*.proto"],
+        "watchAssets": true
       }
     }
   }

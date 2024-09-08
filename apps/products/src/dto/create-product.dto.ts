@@ -14,8 +14,8 @@ export class CreateProductDto {
   ownerId: string; // Reference to the owner's ID
 
   @IsString()
-  ownerName: string;
+  ownerName?: string;
 
   @IsString()
-  ownerAddress: string;
+  ownerAddress?: string;
 }

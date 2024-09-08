@@ -1,24 +1,18 @@
 import { NestFactory } from "@nestjs/core";
 import { ProductsModule } from "./products.module";
-import { RmqService } from "@app/common";
-import { ConfigService } from "@nestjs/config";
-import { ValidationPipe } from "@nestjs/common";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { PRODUCT_PACKAGE_NAME, RmqService } from "@app/common";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { join } from "path";
 
 async function bootstrap() {
   const app = await NestFactory.create(ProductsModule);
   const rmqService = app.get<RmqService>(RmqService);
   app.connectMicroservice(rmqService.getOptions("PRODUCTS"));
-  app.useGlobalPipes(new ValidationPipe());
-  const config = new DocumentBuilder()
-    .setTitle("Products API")
-    .setDescription("API documentation for the Products service")
-    .setVersion("1.0")
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, document);
-  const configService = app.get(ConfigService);
-  await app.startAllMicroservices();
-  await app.listen(configService.get("PORT"));
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: PRODUCT_PACKAGE_NAME,
+      protoPath: join(__dirname, "../product.proto"),
+    },
+  });
 }
-bootstrap();

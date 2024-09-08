@@ -48,7 +48,13 @@ export class OrdersController {
 
   @EventPattern("product_update")
   async handleProductUpdate(@Payload() data: any, @Ctx() context: RmqContext) {
-    this.ordersService.handleManyProductUpdateEvent(data);
+    this.ordersService.updateOrder(data.id, data);
+    this.rmqService.ack(context);
+  }
+
+  @EventPattern("price_updated")
+  async handlePriceUpdate(@Payload() data: any, @Ctx() context: RmqContext) {
+    this.ordersService.updateOrderByProductChange(data.id, data);
     this.rmqService.ack(context);
   }
 }

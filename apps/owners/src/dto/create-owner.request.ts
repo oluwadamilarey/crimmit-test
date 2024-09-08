@@ -4,11 +4,11 @@ export class CreateOwnerRequest {
   @IsString()
   name: string;
 
-  @IsEmail()
+  @IsString()
   email: string;
 
-  @IsPhoneNumber()
-  phoneNumber?: string;
+  // @IsString()
+  // phoneNumber?: string;
 
   @IsString()
   address?: string;

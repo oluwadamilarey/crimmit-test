@@ -8,6 +8,9 @@ import { OwnersRepository } from "./owners.repository";
 
 @Injectable()
 export class OwnersService {
+  getOwnersProducts() {
+    throw new Error("Method not implemented.");
+  }
   constructor(
     private readonly ownersRepository: OwnersRepository,
     @Inject(PRODUCT_SERVICE) private productClient: ClientProxy

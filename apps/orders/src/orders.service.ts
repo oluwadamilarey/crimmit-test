@@ -1,18 +1,25 @@
 import { Injectable, Inject, NotFoundException } from "@nestjs/common";
-import { ClientProxy } from "@nestjs/microservices";
+import { ClientGrpc, ClientProxy } from "@nestjs/microservices";
 import { lastValueFrom } from "rxjs";
 import { CreateOrderRequest } from "./dto/create-order.request";
 import { UpdateOrderRequest } from "./dto/update-order.request";
 import { OrdersRepository } from "./orders.repository";
 import { Order } from "./schemas/order.schema";
-import { BILLING_SERVICE } from "./constants/services";
+import { BILLING_SERVICE, PRODUCT_SERVICE } from "./constants/services";
+import { ProductServiceClient } from "@app/common";
 
 @Injectable()
 export class OrdersService {
+  private productServiceClient: ProductServiceClient;
   constructor(
     private readonly ordersRepository: OrdersRepository,
-    @Inject(BILLING_SERVICE) private billingClient: ClientProxy
+    @Inject(PRODUCT_SERVICE) private readonly clientGrpc: ClientGrpc
   ) {}
+
+  onModuleInit() {
+    this.productServiceClient =
+      this.clientGrpc.getService<ProductServiceClient>("ProductService"); // Initialize the ProductServiceClient
+  }
 
   async createOrder(
     request: CreateOrderRequest,
@@ -29,6 +36,19 @@ export class OrdersService {
       throw err;
     }
   }
+
+  async getProductDetails(productId: string) {
+    try {
+      // Fetch product details from the Product service via gRPC
+      const productDetails = await lastValueFrom(
+        this.productServiceClient.getProduct({ id: productId })
+      );
+      return productDetails;
+    } catch (error) {
+      throw new NotFoundException(`Product with ID ${productId} not found.`);
+    }
+  }
+
 
   async updateOrder(
     orderId: string,
@@ -60,19 +80,27 @@ export class OrdersService {
     return this.ordersRepository.find({});
   }
 
-  async handleManyProductUpdateEvent(product: {
-    productId: any;
-    name: any;
-    price: any;
-  }) {
-    await this.ordersRepository.updateMany(
-      { "products.productId": product.productId },
-      {
-        $set: {
-          "products.$[elem].name": product.name,
-          "products.$[elem].price": product.price,
-        },
+  async updateOrderByProductChange(
+    productId: any,
+    productData: any
+  ): Promise<void> {
+    const orders = await this.ordersRepository.find({ productIds: productId });
+
+    for (const order of orders) {
+      let newTotalPrice = 0;
+
+      for (const orderProduct of order.products) {
+        if (orderProduct.productId == productId) {
+          orderProduct.price = productData.price || orderProduct.price;
+        }
+        newTotalPrice += orderProduct.price * orderProduct.quantity;
       }
-    );
+
+      // Update the order's total price
+      order.totalPrice = newTotalPrice;
+
+      // Save the updated order
+      await this.ordersRepository.save(order);
+    }
   }
 }

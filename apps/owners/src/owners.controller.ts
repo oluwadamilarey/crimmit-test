@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  UseGuards,
   Post,
   Body,
   Req,
@@ -10,7 +9,7 @@ import {
 import { OwnersService } from "./owners.service";
 import { JwtAuthGuard } from "@app/common";
 import { CreateOwnerRequest } from "./dto/create-owner.request";
-import { EventPattern } from "@nestjs/microservices";
+import { UpdateOwnerRequest } from "./dto/update-owner.request";
 
 @Controller("owners")
 export class OwnersController {
@@ -24,13 +23,31 @@ export class OwnersController {
 
   @Post("update")
   // @UseGuards(JwtAuthGuard)
-  async updateOwner(@Body() request: CreateOwnerRequest, @Req() req: any) {
-    return this.ownersService.createOwner(request, req.cookies?.Authentication);
+  async updateOwner(
+    @Param("orderId") orderId: string,
+    @Body() request: UpdateOwnerRequest,
+    @Req() req: any
+  ) {
+    return this.ownersService.updateOwner(
+      orderId,
+      request,
+      req.cookies?.Authentication
+    );
   }
 
   @Get(":orderId")
   // @UseGuards(JwtAuthGuard)
   async getOwnerById(@Param("orderId") orderId: string) {
     return this.ownersService.getOwnerById(orderId);
+  }
+
+  @Get()
+  async getOwners() {
+    return this.ownersService.getOwners();
+  }
+
+  @Get()
+  async getOwnerProducts() {
+    return this.ownersService.getOwnersProducts();
   }
 }

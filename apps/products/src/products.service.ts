@@ -1,9 +1,11 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Product } from "./schemas/product.schema";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { AUTH_SERVICE } from "./constants/service";
 import { ClientProxy } from "@nestjs/microservices";
 import { ProductRepository } from "./products.repository";
+import { ORDER_QUEUE } from "./services/constants";
+import { lastValueFrom } from "rxjs";
 
 @Injectable()
 export class ProductsService {
@@ -11,9 +13,12 @@ export class ProductsService {
 
   constructor(
     private readonly productRepository: ProductRepository,
-    @Inject(AUTH_SERVICE) private authClient: ClientProxy
+    @Inject(ORDER_QUEUE) private orderClient: ClientProxy
   ) {}
 
+  /**
+   * Update product owner details when an owner is updated
+   */
   async updateProductByOwner(data: any): Promise<void> {
     const { updatedUser } = data;
     const {
@@ -23,11 +28,11 @@ export class ProductsService {
     } = updatedUser;
 
     await this.productRepository.updateMany(
-      { owner: ownerId }, // Filter products by owner ID
+      { ownerId }, // Filter products by owner ID
       {
         $set: {
-          ownerName, // Update the cached owner name
-          ownerAddress, // Update the cached owner address
+          ownerName,
+          ownerAddress,
         },
       }
     );
@@ -35,26 +40,73 @@ export class ProductsService {
     this.logger.log(`Products updated for owner ${ownerId}`);
   }
 
-  async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    const { name, description, price, ownerId, ownerName, ownerAddress } =
-      createProductDto;
+  /**
+   * Update product price and notify order service of price update
+   */
+  async updateProductPrice(id: string, price: any): Promise<void> {
+    const product = await this.productRepository.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: {
+          price,
+        },
+      }
+    );
 
-    // Create a new product instance
-    const newProduct = await this.productRepository.create({
-      name,
-      description,
-      price,
-      owner: ownerId,
-      ownerName,
-      ownerAddress,
-    });
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found.`);
+    }
 
-    this.logger.log(`Product created with ID ${newProduct._id}`);
-
-    return newProduct;
+    // Emit event to order service about price update
+    await lastValueFrom(
+      this.orderClient.emit("price_updated", {
+        id: product.id,
+        product,
+      })
+    );
   }
 
-  async getProductsByOwnerID(id: string): Promise<Product[]> {
-    return this.productRepository.find({ _id: id });
+  /**
+   * Create a new product
+   */
+  async createProduct(request: CreateProductDto): Promise<Product> {
+    const session = await this.productRepository.startTransaction();
+
+    try {
+      const product = await this.productRepository.create(request, { session });
+      await session.commitTransaction();
+
+      return product;
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    }
+  }
+
+  /**
+   * Fetch product details by ID (gRPC method implementation)
+   */
+  async getProductById(id: string): Promise<Product> {
+    const product = await this.productRepository.findOne({ _id: id });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found.`);
+    }
+
+    return product;
+  }
+
+  /**
+   * Get products by owner ID
+   */
+  async getProductsByOwnerID(ownerId: string): Promise<Product[]> {
+    return this.productRepository.find({ ownerId });
+  }
+
+  /**
+   * Get all products
+   */
+  async getProducts(): Promise<Product[]> {
+    return this.productRepository.find({});
   }
 }

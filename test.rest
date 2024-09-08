@@ -1,0 +1,48 @@
+# POST http://localhost:3000/orders HTTP/1.1
+# content-type: application/json
+
+# {
+#     "products": [
+#         {
+#             "productId": "64f38ef9c0c33f540aa65725",
+#             "name": "Product 1",
+#             "price": 100,
+#             "quantity": 2
+#         },
+#         {
+#             "productId": "64f38ef9c0c33f540aa65726",
+#             "name": "Product 2",
+#             "price": 150,
+#             "quantity": 1
+#         }
+#     ],
+#     "totalPrice": 350,
+#     "owner": "66d785133a3d2cc456e01021",
+#     "status": "pending"
+# }
+
+
+# POST http://localhost:3004/owners/create HTTP/1.1
+# content-type: application/json
+
+# {
+#     "name": "DavidAbimbola",
+#     "email": "abimbola301@gmail.com",
+#     "phoneNumber": "",
+#     "address":  ""
+# }
+
+# POST http://localhost:3005/product/create HTTP/1.1
+# Content-Type: application/json
+
+# {
+#     "name": "Sape Pkfodct",
+#     "description": "This is a sample product.",
+#     "price": 99.99,
+#     "owner": "66d9495b0addc6cbca6c6b73",
+#     "ownerName": "John Doe",
+#     "ownerAddress": "123 Main St, City, Country"
+# }
+
+GET http://localhost:3005/products
+Content-Type: application/json

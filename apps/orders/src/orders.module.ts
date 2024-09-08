@@ -2,12 +2,21 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import * as Joi from "joi";
-import { DatabaseModule, RmqModule, AuthModule } from "@app/common";
+import {
+  DatabaseModule,
+  RmqModule,
+  AuthModule,
+  PRODUCT_PACKAGE_NAME,
+  PRODUCT_SERVICE_NAME,
+} from "@app/common";
 import { OrdersController } from "./orders.controller";
 import { OrdersService } from "./orders.service";
 import { OrdersRepository } from "./orders.repository";
 import { Order, OrderSchema } from "./schemas/order.schema";
 import { BILLING_SERVICE } from "./constants/services";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+import { PRODUCT_SERVICE } from "apps/owners/src/constants/services";
+import { join } from "path";
 
 @Module({
   imports: [
@@ -27,6 +36,16 @@ import { BILLING_SERVICE } from "./constants/services";
       name: BILLING_SERVICE,
     }),
     AuthModule,
+    ClientsModule.register([
+      {
+        name: PRODUCT_SERVICE_NAME,
+        transport: Transport.GRPC,
+        options: {
+          package: PRODUCT_PACKAGE_NAME,
+          protoPath: join(__dirname, "proto/product.proto"),
+        },
+      },
+    ]),
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrdersRepository],

@@ -14,13 +14,13 @@ export class Product extends AbstractDocument {
   price: number; // Price of the product
 
   @Prop({ type: Types.ObjectId, ref: "Owner" })
-  owner: any; // Reference to the owner who owns the product
+  ownerId: any; // Reference to the owner who owns the product
 
   @Prop()
-  ownerName: string; // Cached owner name
+  ownerName?: string; // Cached owner name
 
   @Prop()
-  ownerAddress: string; // Cached owner address
+  ownerAddress?: string; // Cached owner address
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

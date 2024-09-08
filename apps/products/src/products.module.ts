@@ -9,6 +9,7 @@ import { AUTH_SERVICE } from "@app/common/auth/services";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Product, ProductSchema } from "./schemas/product.schema";
 import { ProductRepository } from "./products.repository";
+import { ORDER_QUEUE } from "./services/constants";
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { ProductRepository } from "./products.repository";
       envFilePath: "./apps/products/.env",
     }),
     RmqModule.register({
-      name: AUTH_SERVICE,
+      name: ORDER_QUEUE,
     }),
     AuthModule,
     MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
