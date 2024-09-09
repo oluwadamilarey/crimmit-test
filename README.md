@@ -84,7 +84,7 @@ These modules are likely part of a shared library used across all services.
 
 ## Development
 
-For development purposes, you can run each service individually using: npm run start:dev <service-name>
+For development purposes, you can run each service individually using: `npm run start:dev <service-name>`
 
 Replace `<service-name>` with `orders`, `owners`, or `products`.
 
