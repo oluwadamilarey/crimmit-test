@@ -34,8 +34,11 @@ This project demonstrates a microservices architecture built using [NestJS](http
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo.git
-cd your-repo
+git clone https://github.com/oluwadamilarey/crimmit-test
+cd crimmit-test
 
 ** /apps /owners - src/ - .env.sample /products - src/ - .env.sample /orders - src/ - .env.sample
+
+ ## Docker set up
+ docker-compose up --build
 
