@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import * as Joi from "joi";
 import {
@@ -8,6 +8,7 @@ import {
   AuthModule,
   PRODUCT_PACKAGE_NAME,
   PRODUCT_SERVICE_NAME,
+  RedisModule,
 } from "@app/common";
 import { OrdersController } from "./orders.controller";
 import { OrdersService } from "./orders.service";
@@ -27,6 +28,8 @@ import { join } from "path";
         PORT: Joi.number().required(),
         RABBIT_MQ_URI: Joi.string().required(),
         RABBIT_MQ_ORDER_QUEUE: Joi.string().required(),
+        REDIS_URI: Joi.string().required(),
+        REDIS_ORDERS_DB: Joi.number().required(),
       }),
       envFilePath: "./apps/orders/.env",
     }),
@@ -46,6 +49,7 @@ import { join } from "path";
         },
       },
     ]),
+    RedisModule.register({ name: "ORDERS" }),
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrdersRepository],

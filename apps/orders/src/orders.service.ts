@@ -5,15 +5,16 @@ import { CreateOrderRequest } from "./dto/create-order.request";
 import { UpdateOrderRequest } from "./dto/update-order.request";
 import { OrdersRepository } from "./orders.repository";
 import { Order } from "./schemas/order.schema";
-import { BILLING_SERVICE, PRODUCT_SERVICE } from "./constants/services";
-import { ProductServiceClient } from "@app/common";
+import { PRODUCT_SERVICE } from "./constants/services";
+import { ProductServiceClient, RedisService } from "@app/common";
 
 @Injectable()
 export class OrdersService {
   private productServiceClient: ProductServiceClient;
   constructor(
     private readonly ordersRepository: OrdersRepository,
-    @Inject(PRODUCT_SERVICE) private readonly clientGrpc: ClientGrpc
+    @Inject(PRODUCT_SERVICE) private readonly clientGrpc: ClientGrpc,
+    private readonly redisService: RedisService
   ) {}
 
   onModuleInit() {
@@ -38,17 +39,32 @@ export class OrdersService {
   }
 
   async getProductDetails(productId: string) {
+    const cacheKey = `product:${productId}`;
+
+    // Try to get the product details from Redis cache
+    const cachedProduct = await this.redisService.get(cacheKey);
+    if (cachedProduct) {
+      return JSON.parse(cachedProduct);
+    }
+
     try {
-      // Fetch product details from the Product service via gRPC
+      // If not in cache, fetch product details from the Product service via gRPC
       const productDetails = await lastValueFrom(
         this.productServiceClient.getProduct({ id: productId })
       );
+
+      // Cache the product details in Redis
+      await this.redisService.set(
+        cacheKey,
+        JSON.stringify(productDetails),
+        3600
+      ); 
+
       return productDetails;
     } catch (error) {
       throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
   }
-
 
   async updateOrder(
     orderId: string,
