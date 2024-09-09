@@ -1,42 +1,95 @@
-# Microservices Architecture with NestJS
+# Microservices Project
 
-This project demonstrates a microservices architecture built using [NestJS](https://nestjs.com/), featuring the `Owners`, `Products`, and `Orders` services. The services communicate via RabbitMQ for messaging and gRPC for remote procedure calls. Redis is used for caching.
+This project is a microservices-based application consisting of Orders, Owners, and Products services. It uses NestJS, MongoDB, RabbitMQ, and Redis to create a scalable and distributed system.
 
-## Features
+## Table of Contents
 
-- **Owners Service**: Manages owner profiles.
-- **Products Service**: Handles product management and reacts to owner profile changes.
-- **Orders Service**: Manages customer orders and updates when product data changes.
-- **RabbitMQ**: For event-driven communication between microservices.
-- **gRPC**: For synchronous communication between microservices.
-- **Redis**: For caching frequently accessed data.
+1. [Overview](#overview)
+2. [Services](#services)
+3. [Technologies](#technologies)
+4. [Project Structure](#project-structure)
+5. [Setup](#setup)
+6. [Running the Application](#running-the-application)
+7. [Service Communication](#service-communication)
+8. [Common Modules](#common-modules)
 
-## Prerequisites
+## Overview
 
-- [Node.js](https://nodejs.org/en/) (v14.x or later)
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- [RabbitMQ](https://www.rabbitmq.com/)
-- [Redis](https://redis.io/)
+This microservices architecture allows for independent scaling and development of different components of the application. It uses RabbitMQ for asynchronous communication between services and MongoDB for data persistence.
 
 ## Services
 
-1. **Owners Service**: Manages owner profiles, with CRUD operations available for owners. Emits events like `owner_created` and `owner_updated` to RabbitMQ to notify other services.
-   
-2. **Products Service**: Manages products linked to owners. Listens for events like `owner_updated` to update product information accordingly. Exposes gRPC methods to retrieve products by owner.
+1. **Orders Service**: Manages order-related operations
+2. **Owners Service**: Handles owner profile management
+3. **Products Service**: Manages product information and inventory
 
-3. **Orders Service**: Manages customer orders and listens for `price_updated` events to adjust order totals if product prices change.
+## Technologies
+
+- NestJS
+- MongoDB
+- RabbitMQ
+- Redis
+- Docker & Docker Compose
 
 ## Project Structure
 
-## Getting Started
+The project is structured as a monorepo with multiple NestJS applications:
 
-### Clone the Repository
+├── apps
+│ ├── orders
+│ ├── owners
+│ └── products
+├── libs
+│ └── common
+└── docker-compose.yml
 
-```bash
+## Setup
+
+1. Clone the repository:
+
 git clone https://github.com/oluwadamilarey/crimmit-test
 cd crimmit-test
 
- ## Docker set up
- docker-compose up --build
+3. Set up environment variables:
+   Create `.env` files in each service directory (`apps/orders/.env`, `apps/owners/.env`, `apps/products/.env`) with the following variables:
+   MONGODB*URI=mongodb://mongodb-primary:27017/microservices
+   RABBIT_MQ_URI=amqp://rabbitmq:5672
+   RABBIT_MQ*<SERVICE>\_QUEUE=<service_queue_name>
+   PORT=<service_port>
+   REDIS_URI=redis://redis:6379
 
+Ensure Docker and Docker Compose are installed on your system.
+
+## Running the Application
+
+To start all services and dependencies:
+
+- docker-compose up -build
+
+## Service Communication
+
+- **RabbitMQ**: Used for asynchronous communication between services. Each service can emit and listen to specific events.
+- **gRPC**: Used for synchronous communication, particularly by the Products service.
+
+## Common Modules
+
+The project includes several common modules and utilities:
+
+1. **AbstractRepository**: A base repository class for MongoDB operations.
+2. **AbstractDocument**: A base document schema for MongoDB.
+3. **DatabaseModule**: Configures the MongoDB connection.
+4. **RmqModule & RmqService**: Configures and manages RabbitMQ connections.
+
+These modules are likely part of a shared library used across all services.
+
+## Development
+
+For development purposes, you can run each service individually using: npm run start:dev <service-name>
+
+Replace `<service-name>` with `orders`, `owners`, or `products`.
+
+## Notes
+
+- The provided `docker-compose.yml` includes commented-out sections for additional services (billing, auth) and volume configurations. Uncomment these as needed for your full application setup.
+- Ensure all required ports are free on your host machine before starting the services.
+- For production deployment, review and adjust the Dockerfile in each service directory and the docker-compose.yml file as needed.
