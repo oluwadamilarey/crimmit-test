@@ -52,7 +52,7 @@ cd crimmit-test
 
 3. Set up environment variables:
    Create `.env` files in each service directory (`apps/orders/.env`, `apps/owners/.env`, `apps/products/.env`) with the following variables:
-   MONGODB*URI=mongodb://mongodb-primary:27017/microservices
+   MONGODB_URI=mongodb://mongodb-primary:27017/microservices
    RABBIT_MQ_URI=amqp://rabbitmq:5672
    RABBIT_MQ*<SERVICE>\_QUEUE=<service_queue_name>
    PORT=<service_port>
@@ -80,7 +80,7 @@ The project includes several common modules and utilities:
 3. **DatabaseModule**: Configures the MongoDB connection.
 4. **RmqModule & RmqService**: Configures and manages RabbitMQ connections.
 
-These modules are likely part of a shared library used across all services.
+These modules are part of a shared library used across all services.
 
 ## Development
 
@@ -90,6 +90,5 @@ Replace `<service-name>` with `orders`, `owners`, or `products`.
 
 ## Notes
 
-- The provided `docker-compose.yml` includes commented-out sections for additional services (billing, auth) and volume configurations. Uncomment these as needed for your full application setup.
+- The provided `docker-compose.yml` includes commented-out sections for additional services (billing, auth) and volume configurations. 
 - Ensure all required ports are free on your host machine before starting the services.
-- For production deployment, review and adjust the Dockerfile in each service directory and the docker-compose.yml file as needed.
